@@ -1,0 +1,980 @@
+﻿@model AuctionProject.Models.Product
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    ViewData["Title"] = "Details";
+
+    string listUserJoin = Model.ListUserJoin;
+    string[] elements;
+    if (listUserJoin != null)
+    {
+        elements = listUserJoin.Split(',');
+    }
+    else
+    {
+        elements = new string[0];
+    }
+
+    //chat get usename
+    var userLogin = User.Identity.Name;
+}
+<style>
+    .tab-link {
+        text-decoration: none;
+        color: white;
+        font-weight: 500;
+    }
+
+    .tab-link-admin {
+        color: red;
+    }
+
+    .tab-link-mod {
+        color: blue;
+    }
+
+    .tab-link-user {
+        color: gray;
+    }
+
+    .tab-link:hover {
+        all: unset;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    #chatContainer {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #chatBox {
+        width: 100%; /* Set the initial width to 300px */
+        height: 500px; /* Set the initial height to 300px */
+        max-height: 500px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        background-color: #f3f3f3;
+    }
+
+    #message {
+        width: 70%;
+        padding: 8px;
+        margin-right: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    #sendButton {
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 50px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.9);
+    }
+
+    /* Style for the modal content (the image) */
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: auto;
+        max-width: 90%;
+        max-height: 90vh; /* Set a maximum height for the modal */
+    }
+
+    /* Style for the close button */
+    .close {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .countdown-container {
+        width: 100%; /* Adjust the width as needed */
+        margin: 20px auto;
+        background-color: #ff0000; /* Red background color */
+        padding: 10px;
+        border-radius: 10px; /* Rounded corners for a nicer look */
+        text-align: center;
+    }
+
+    .countdown {
+        font-size: 18px; /* Adjust the font size as needed */
+        font-family: Arial, sans-serif;
+        color: #fff; /* White text color */
+    }
+
+    .offerButton {
+        background-color: red;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease; /* Smooth transition effect */
+    }
+
+    .offerButton:hover {
+        background-color: black;
+    }
+
+    /* popup */
+    /* Add your styles for the popup here */
+    #offerPopup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 30px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+    /* loading page */
+
+
+    /* css for chat button */
+    /* Style for the radio button container */
+    .chat-container div input[type="radio"] {
+        display: none; /* Hide the actual radio buttons */
+    }
+
+    /* Style for the labels to make them look like buttons */
+    .chat-container div label {
+        display: inline-block;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background-color: #f2f2f2;
+        color: #333;
+        border-radius: 5px;
+    }
+
+    /* Style for the selected label (button) */
+    .chat-container div input[type="radio"]:checked + label {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.13/signalr.min.js"></script>
+<hr />
+<div class="row">
+
+
+
+    <div class="col-md-3 d-flex justify-content-center">
+        <div class="col-sm-8">
+            <img src="/Upload/@Html.DisplayFor(model => model.Image)" class="card-img-top" alt="Product Image" onclick="showImage(this.src)">
+        </div>
+
+        <!-- Modal for displaying the larger image -->
+        <div id="imageModal" class="modal">
+            <span class="close" onclick="closeImageModal()">&times;</span>
+            <img class="modal-content" id="modalImage">
+        </div>
+    </div>
+    <div class="col-md-5">   
+        <div class="row">
+            <!-- Information Column -->
+            <div class="col-sm-12">
+                <h1>@Html.DisplayFor(model => model.Title)</h1>
+                <div class="countdown-container">
+                    <div class="countdown" id="timeLeft">00 days 00:00:00</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Description</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.Description)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Date Start</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.DateStart)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Date End</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.DateEnd)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Price Start</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.PriceStart)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Price End</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.PriceEnd)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Price Jump</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.PriceJump)</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3"><strong>Price Finish</strong></div>
+                    <div class="col-sm-9" id="updatePriceFinish">@Html.DisplayFor(model => model.PriceFinish)</div>
+                </div>
+                 <div class="row">
+                    <div class="col-sm-3"><strong>Owner</strong></div>
+                    <div class="col-sm-9">@Html.DisplayFor(model => model.User.Email)</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-3"><strong>Bidding</strong></div>
+                    <div class="col-sm-9" id="updateUserGet">@Html.DisplayFor(model => model.UserGet.Email)</div>
+                </div>       
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        @if(Model.isBuyNow == true)
+                        {
+                        <div class="row" style="margin-top: 50px;">
+                            <div class="text-center">
+                                <a href="@Url.Page("/Account/Login", null, new { area = "Identity" })" class="btn btn-danger" style="padding: 10px 20px; border-radius: 5px;">
+                                    <strong>Auction has been ended</strong>
+                                </a>
+                            </div>
+                        </div>
+                        }
+                        else
+                        {
+                        <div class="row" style="margin-top: 50px;">
+                            @*  Offer base on the price jump *@
+                            <div class="col-sm-3">
+                                <form class="flex: 1;" id="offerForm">
+                                    <input type="hidden" name="productId" value="@Html.DisplayFor(model => model.Id)" />
+                                    <input type="hidden" name="priceFinish" value="@Html.DisplayFor(model => model.PriceFinish)" />
+
+                                    <div class="text-center">
+                                        <button type="button" id="offerButton" class="offerButton" onclick="return submitOffer()">
+                                            <strong>Offer Now</strong>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            @* Offer base on the input -- test popup done *@
+                            <div class="col-sm-3">
+                                <form class="flex: 1;">
+                                    <div class="text-center">
+                                        <button type="button" id="offer" class="offerButton" onclick="showOfferPopup()">
+                                            <strong>Offer with a price</strong>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            @* test buy now *@
+                            <div class="col-sm-3">
+                                <form class="flex: 1;" id="buyNow">
+                                    <input type="hidden" name="productId" value="@Html.DisplayFor(model => model.Id)" />
+                                    <div class="text-center">
+                                        <button type="button" id="buynow" class="offerButton" onclick="buyNow()">
+                                            <strong>Buy now</strong>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            @* Follow the product *@
+                            <div class="col-sm-3" id="follow">
+                                <form id="followForm" class="flex: 1;">
+                                    <input type="hidden" name="productId" value="@Html.DisplayFor(model => model.Id)" />
+                                    <div class="text-center">
+                                        <button type="button" id="btnFollow" class="btn btn-primary midtextbutton" style="padding: 10px 20px; border-radius: 5px;" onclick="follow()"></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        }
+                   
+                    }
+                    else
+                    {
+                    <div class="text-center" style="margin-top: 50px;">
+                        <a href="@Url.Page("/Account/Login", null, new { area = "Identity" })" class="btn btn-primary" style="padding: 10px 20px; border-radius: 5px;">
+                            <strong>Login to Proceed</strong>
+                        </a>
+                    </div>
+                    }
+
+                <div class="col-sm-12 d-flex justify-content-center">
+                    <div id="messageContainer" class="text-center" style="margin-top: 10px;"></div>
+                </div>
+                <!-- test popup -->
+                <div id="offerPopup">
+                    <form id="offerWithPrice">
+                        <input type="hidden" name="productId" value="@Html.DisplayFor(model => model.Id)" />
+                        <input type="hidden" name="priceFinish" value="@Html.DisplayFor(model => model.PriceFinish)" />
+                        <label for="price">Enter Price:</label>
+                        <input type="text" id="price" name="price" placeholder="Enter price" @* oninput="formatPrice(this)" *@>
+                        <button type="button" onclick="submitOfferWithPrice()">Submit</button>
+                        <button type="button" onclick="hideOfferPopup()">Cancel</button>
+                        <div id="validationMessage"></div> <!-- Message element -->
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-md-4">
+        <div id="chatContainer" class="chat-container">
+            <h2>Chatbox</h2>
+            <div id="chatBox"></div>
+            <div>
+                <input type="text" id="username" value="@userLogin" readonly hidden />
+                <input type="text" id="message" placeholder="Enter your message" />
+                <button id="sendButton" class="btn btn-primary">Send</button>
+
+                <div>
+                    <input type="radio" id="worldChannel" name="channel" value="world" checked>
+                    <label for="worldChannel">World</label>
+                    <input type="radio" id="userChannel" name="channel" value="user">
+                    <label for="userChannel">User</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+<hr />
+
+    <h1>List user Join</h1>
+    @foreach (var roleColor in ViewBag.Color)
+    {
+        @foreach (string element in elements)
+        {
+
+            if (@element.Trim() == @roleColor.Email && roleColor.Name == "Admin")
+            {
+                <a class="tab-link tab-link-admin" href="../../UsersPages/Index/@element.Trim()">@element,</a>
+            }
+            else if (@element.Trim() == @roleColor.Email && roleColor.Name == "Mod")
+            {
+                <a class="tab-link tab-link-mod" href="../../UsersPages/Index/@element.Trim()">@element,</a>
+            }
+            else if (@element.Trim() == @roleColor.Email && roleColor.Name == "User")
+            {
+                <a class="tab-link tab-link-user" href="../../UsersPages/Index/@element.Trim()">@element,</a>
+            }
+
+        }
+    }
+<div id="Idproduct" data-id="@Model.Id">@Html.DisplayFor(model => model.Id)</div> @* push id *@
+<!-- event follow button -->
+<script>
+    function follow() {
+        $.ajax({
+            url: "/ProductFollows/Follow",
+            type: "POST",
+            data: $("#followForm").serialize(),
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                $("#btnFollow").text(data ? "Followed" : "Follow");
+            },
+            error: function () {
+                displayMessage("error", "An error occurred.");
+            }
+        });
+    }
+    var hasRunCheckFollow = false;
+    function checkFollowFirstTime() {
+        $.ajax({
+            url: "/ProductFollows/CheckFollow",
+            type: "POST",
+            data: $("#followForm").serialize(),
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                $("#btnFollow").text(data ? "Followed" : "Follow");
+            },
+            error: function () {
+                displayMessage("error", "An error occurred.");
+            }
+        });
+    }
+    $(document).ready(function () {
+        if (!hasRunCheckFollow) {
+            checkFollowFirstTime();
+            hasRunCheckFollow = true; // Update the flag
+        }
+    });
+
+</script>
+<!-- test Buy now -->
+<script>
+    function buyNow() {
+        if (showConfirmation()) {
+            $.ajax({
+                url: "/Products/BuyNow",
+                type: "POST",
+                data: $("#buyNow").serialize(),
+                dataType: "json",
+                success: function (data) {
+                    handleBuyNowResponse(data);
+
+                },
+                error: function () {
+                    displayMessage("error", "An error occurred.");
+                }
+            });
+        }
+    }
+    function handleBuyNowResponse(data) {
+        if (data.success) {
+            displayMessage("success", data.message);
+            var price = '@Html.DisplayFor(model => model.PriceEnd)';
+            // when success will send a message in system
+            var user = "System";
+            var username = $("#username").val();
+            var message = "User " + username + " bid " + price;
+            var idProduct = $("#Idproduct").data("id");
+            connection.invoke("SendMessage", user, message, idProduct)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+            $("#message").val("").focus();
+        } else {
+            displayMessage("error", data.message);
+        }
+    }
+</script>
+<!-- test popup when click offer by price done-->
+<script>
+    function showOfferPopup() {
+        // Display the popup
+        document.getElementById('offerPopup').style.display = 'block';
+    }
+
+    function hideOfferPopup() {
+        // Hide the popup
+        document.getElementById('offerPopup').style.display = 'none';
+    }
+
+    function submitOfferWithPrice() {
+        // Get the entered price from the input field
+        var price = document.getElementById('price').value;
+        // You can add further logic here to handle the submitted offer
+        console.log('Offer submitted with price:', price);
+        /* var formData = {
+            productId: $("#productId").val(),
+            priceFinish: $("#priceFinish").val(),
+            price: price
+        }; */
+        // validate 
+        var isValidPrice = validatePrice();
+
+        if (!isValidPrice) {
+            // If the price is not valid, stop the function
+            return;
+        }
+        $.ajax({
+            url: "/Products/OfferWithPrice",
+            type: "POST",
+            data: $("#offerWithPrice").serialize(), // Send the object instead of serializing the form
+            dataType: "json",
+            success: function (data) {
+                handleOfferWithPrice(data);
+            },
+            error: function () {
+                displayMessage("error", "An error occurred.");
+            }
+        });
+        // Hide the popup
+        hideOfferPopup();
+    }
+    $("#price").change(function () {
+        validatePrice();
+    });
+    function validatePrice() {
+        var priceString = $("#price").val();
+        // Remove dots from the string
+        var priceWithoutDots = priceString.replace(/\./g, '');
+        console.log(priceWithoutDots);
+        // Parse the string to a floating-point number
+        var price = parseFloat(priceWithoutDots); // Convert to float
+        console.log(price);
+
+
+        // Get the values of priceFinish, priceJump, and priceEnd from your form
+        var priceFinish = parseFloat($("input[name='priceFinish']").val());
+        var priceJump = parseFloat('@Html.DisplayFor(model => model.PriceJump)');
+        var priceEnd = parseFloat('@Html.DisplayFor(model => model.PriceEnd)');
+        var tempPrice = parseFloat(parseFloat(priceFinish) + parseFloat(priceJump));
+        /*console.log("price: " + price);
+        console.log("priceFinish: " + priceFinish);
+        console.log("priceJump: " + priceJump);
+        console.log("priceEnd: " + priceEnd);
+        console.log("tempPrice: " + tempPrice);*/
+        // Check the condition
+        if (price <= tempPrice) {
+            // Valid price
+            $("#validationMessage").html('<span style="color: red;">Price must higher than ' + tempPrice + '.</span>');
+            return false;
+        } else if (price >= priceEnd) {
+            // Invalid price
+            $("#validationMessage").html('<span style="color: red;">Price must lower than ' + priceEnd + '.</span>');
+            return false;
+        }
+        else if (price > tempPrice && price < priceEnd) {
+            $("#validationMessage").html('<span style="color: green;">You can bid this price.</span>');
+            return true;
+        } else {
+            $("#validationMessage").html('<span style="color: red;">Something went wrong.</span>');
+             return false;
+        }
+    }
+    function handleOfferWithPrice(data) {
+        if (data.success) {
+            displayMessage("success", data.message);
+            var price = parseFloat($("#price").val());
+            // when success will send a message in system
+            var user = "System";
+            var username = $("#username").val();
+            var message = "User " + username + " bid " + price;
+            var idProduct = $("#Idproduct").data("id");
+
+            connection.invoke("SendMessage", user, message, idProduct)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+            $("#message").val("").focus();
+        } else {
+            displayMessage("error", data.message);
+        }
+    }
+</script>
+
+<!-- event offer -->
+<script>
+    function submitOffer() {
+        if (showConfirmation()) {
+            $.ajax({
+                url: "/Products/Offer",
+                type: "POST",
+                data: $("#offerForm").serialize(),
+                dataType: "json",
+                success: function (data) {
+                    handleOfferResponse(data);
+                   
+                },
+                error: function () {
+                    displayMessage("error", "An error occurred.");
+                }
+            });
+        }
+    }
+
+    function handleOfferResponse(data) { 
+        if (data.success) {
+            displayMessage("success", data.message);
+            var priceFinish = $("input[name='priceFinish']").val();
+            var priceJump = '@Html.DisplayFor(model => model.PriceJump)';
+            console.log(priceFinish + "aaa" + priceJump);
+            var price = parseFloat(priceFinish) + parseFloat(priceJump);
+            // when success will send a message in system
+            var user = "System";
+            var username = $("#username").val();
+            var message = "User " + username + " bid " + price;
+            var idProduct = $("#Idproduct").data("id");
+            var currentChannel = "world"
+
+            connection.invoke("SendMessage", user, message, idProduct, currentChannel)
+                .catch(function (err) {
+                    return console.error(err.toString());
+                });
+
+            $("#message").val("").focus();
+        } else {
+            displayMessage("error", data.message);
+        }
+    }
+
+    function displayMessage(type, message) {
+        var messageContainer = $("#messageContainer");
+        messageContainer.empty();
+
+        var alertClass = type === "success" ? "alert-success" : "alert-danger";
+        var alertHtml = '<div class="alert ' + alertClass + '">' + message + '</div>';
+
+        messageContainer.append(alertHtml);
+    }
+
+    function showConfirmation() {
+        return confirm("Are you sure you want to make this offer?");
+    }
+</script>
+
+<!-- Detail event button offer will close when ended-->
+<script>
+    // Get the DateEnd value from the HTML and parse it to a JavaScript Date object
+    var dateEnd = new Date('@Model.DateEnd');
+
+    // Get the current date and time
+    var currentDate = new Date();
+
+    // Compare DateEnd with the current date
+    if (dateEnd < currentDate) {
+        // If DateEnd is in the past, disable the button and change its text
+        var offerButton = document.getElementById('offerButton');
+        offerButton.disabled = true;
+        offerButton.innerHTML = 'Auction has ended';
+    }
+</script>
+
+<!-- Display time and update every second -->
+<script>
+    // Function to format time as DD days HH : MM : SS
+    function formatTime() {
+        var dateEnd = new Date('@Html.DisplayFor(model => model.DateEnd)');
+        var currentDate = new Date();
+
+        var timeDifference = dateEnd - currentDate;
+        var days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        var formattedTime = ('0' + days).slice(-2) + ' days ' +
+            ('0' + hours).slice(-2) + ' : ' +
+            ('0' + minutes).slice(-2) + ' : ' +
+            ('0' + seconds).slice(-2);
+
+        if (dateEnd < currentDate) {
+            $("#timeLeft").text("00 days 00 : 00 : 00");
+        }
+        else {
+            $("#timeLeft").text(formattedTime);
+
+            // Check if the time has reached zero and the auctionEnded flag is not set
+            if (days === 0 && hours === 0 && minutes === 0 && seconds === 0 && !auctionEnded) {
+                // Set the flag to true to prevent further execution
+                displayUserWon();
+            }
+        }
+    }
+
+    function displayUserWon() {
+        var user = "System";
+        var winningUser = '@Html.DisplayFor(model => model.UserGet.Email)';
+        var message = "The Auction has been ended. The user won is " + winningUser;
+        var idProduct = $("#Idproduct").data("id");
+
+        connection.invoke("SendMessage", user, message, idProduct)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $("#message").val("").focus();
+        console.log("Auction has ended. Winner: " + winningUser);
+    }
+
+    $(document).ready(function () {
+        formatTime();
+        setInterval(formatTime, 1000);
+    });
+</script>
+
+
+
+
+
+<!-- chat -->
+<script>
+    //connect to signalR
+    var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+    // get id of product 
+    function getProductId() {
+        return $("#Idproduct").data("id");
+    }
+    // when chat it will scroll to botttoom
+    function scrollToBottom() {
+        var chatBox = document.getElementById("chatBox");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+    // defaulchannel
+    var currentChannel = "world"; // Default channel
+    // clear chat box when click w
+    function clearChatBox() {
+        $("#chatBox").empty();
+    }
+    // if switch change channel
+    $("input[name='channel']").change(function () {
+        currentChannel = $("input[name='channel']:checked").val();
+        clearChatBox();
+        switch (currentChannel) {
+            case "world":
+                // Fetch chat messages when the page loads
+                $.ajax({
+                    url: '/GetChatMessages',
+                    type: 'GET',
+                    data: { productId: getProductId(), channel: currentChannel }, // get id
+                    success: function (data) {
+                        // Display the fetched messages on the chat box
+                        data.forEach(function (message) {
+                            console.log(message);
+                            var encodedMsg = $("<div />").text(message.message).html();
+                            $("#chatBox").append("<p><strong>" + message.username + "</strong>: " + encodedMsg + "</p>");
+                        });
+                        scrollToBottom();
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+                break;
+            case "user":
+                // Fetch chat messages when the page loads
+                $.ajax({
+                    url: '/GetChatMessages',
+                    type: 'GET',
+                    data: { productId: getProductId(), channel: currentChannel }, // get id
+                    success: function (data) {
+                        // Display the fetched messages on the chat box
+                        data.forEach(function (message) {
+                            console.log(message);
+                            var encodedMsg = $("<div />").text(message.message).html();
+                            $("#chatBox").append("<p><strong>" + message.username + "</strong>: " + encodedMsg + "</p>");
+                        });
+                        scrollToBottom();
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+                break;
+           
+        }
+
+    });
+    /*connection.on("ReceiveMessage", function (user, message, channel) {
+        var encodedMsg = $("<div />").text(message).html();
+
+        if (channel === currentChannel) {
+            $("#chatBox").append("<p><strong>" + user + "</strong>: " + encodedMsg + "</p>");
+            scrollToBottom();
+        }
+    });*/
+
+  
+    function sendMessage() {
+        var user = $("#username").val();
+        var message = $("#message").val();
+        var idProduct = $("#Idproduct").data("id");
+
+        connection.invoke("SendMessage", user, message, idProduct, currentChannel)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
+
+        $("#message").val("").focus();
+    }
+
+    // Modify the ReceiveMessage function to handle channel information
+    connection.on("ReceiveMessage", function (user, message, channel) {
+        var encodedMsg = $("<div />").text(message).html();
+
+        // Check if the message is from the current channel
+        if (channel === currentChannel) {
+            $("#chatBox").append("<p><strong>" + user + "</strong>: " + encodedMsg + "</p>");
+            var chatBox = document.getElementById("chatBox");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    });
+
+
+    $("#sendButton").click(sendMessage);
+
+    $("#message").keypress(function (e) {
+        if (e.which === 13) { // 13 is the Enter key code
+            sendMessage();
+        }
+    });
+
+    connection.start().then(function () {
+        console.log("Connected!");
+
+        // Fetch chat messages when the page loads
+        $.ajax({
+            url: '/GetChatMessages',
+            type: 'GET',
+            data: { productId: getProductId(), channel: currentChannel }, // get id
+            success: function (data) {
+                // Display the fetched messages on the chat box
+                data.forEach(function (message) {
+                    console.log(message);
+                    var encodedMsg = $("<div />").text(message.message).html();
+                    $("#chatBox").append("<p><strong>" + message.username + "</strong>: " + encodedMsg + "</p>");
+                });
+                scrollToBottom();
+            },
+            error: function (error) {
+                console.error(error);
+            }
+        });
+
+    }).catch(function (err) {
+        console.error(err.toString());
+    });
+    /*
+    connection.on("LoadChatMessages", function (messages) {
+        // Display the fetched messages on the chat box
+        messages.forEach(function (message) {
+            var encodedMsg = $("<div />").text(message.message).html();
+            $("#chatBox").append("<p><strong>" + message.username + "</strong>: " + encodedMsg + "</p>");
+        });
+    });
+    */
+</script>
+
+
+<!-- click image -->
+<script>
+    // Function to show the larger image
+    function showImage(src) {
+        var modal = document.getElementById("imageModal");
+        var modalImage = document.getElementById("modalImage");
+
+        modal.style.display = "block";
+        modalImage.src = src;
+    }
+
+    // Function to close the image modal
+    function closeImageModal() {
+        var modal = document.getElementById("imageModal");
+        modal.style.display = "none";
+    }
+</script>
+
+<!-- Price finish realtime -->
+<script>
+    function updatePriceFinish() {
+        $.ajax({
+            url: '@Url.Action("updatePriceFinish", "Products")',
+            method: "GET",
+            data: { id: @Model.Id }, // Replace with the actual product ID
+            dataType: "json",
+            success: function (data) {
+                $("#updatePriceFinish").text(data);
+                $("input[name='priceFinish']").val(data);
+            },
+            error: function (error) {
+                console.error("Error", error);
+            }
+        });
+    }
+
+    // Set interval to call the updatePriceFinish function every second
+    setInterval(updatePriceFinish, 1000);
+
+</script>
+<!-- User Get Bidding-->
+<script>
+    function updateUserGet() {
+        $.ajax({
+            url: '@Url.Action("UpdateUserGet", "Products")', // Ensure the correct action name
+            method: 'GET',
+            data: { id: @Model.Id }, // Replace with the actual product ID
+            dataType: 'json',
+            success: function (data) {
+                console.log("das" + data);
+                $("#updateUserGet").text(data);
+            },
+            error: function (error) {
+                console.error('Error', error);
+            }
+        });
+    }
+    setInterval(updateUserGet, 1000);
+</script>
+<!-- close button -->
+<script>
+    function closeButton() {
+        // Show loading spinner
+        $.ajax({
+            url: '@Url.Action("CloseDateEnd", "Products")',
+            method: 'GET',
+            data: { id: @Model.Id },
+            dataType: 'json',
+            success: function (data) {
+                var dateEnd = new Date(data);
+                var currentDate = new Date();
+
+                // Disable buttons if dateEnd is less than the current date
+                if (dateEnd < currentDate) {
+                    console.log("okok" + dateEnd + "ok ok ok " + currentDate);
+                    $("#offerButton, #offer, #buynow, .midtextbutton").hide();
+                    $("#offerButton").text("Auction has ended");
+                    $("#offerButton, #offer, #buynow, .midtextbutton").prop('disabled', true);
+                }
+            },
+            error: function (error) {
+                console.error('Error', error);
+            },
+            
+        });
+    }
+
+    // Call closeButton on page load
+    $(document).ready(function () {
+        closeButton();
+    });
+
+    // Set interval to call closeButton every second
+    setInterval(closeButton, 1000);
+
+</script>
+ <!--input 100.000-->
+@* <script>
+    function formatPrice(input) {
+        // Check if input is defined and has a value property
+        if (input && input.value !== undefined) {
+            // Remove non-numeric characters from the input value
+            let numericValue = input.value.replace(/\D/g, '');
+
+            // Format the numeric value with commas and periods
+            let formattedValue = numericValue.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
+            // Set the formatted value back to the input
+            input.value = formattedValue;
+        } else {
+            console.error("Invalid input or input value is undefined.");
+        }
+    }
+</script>
+ *@

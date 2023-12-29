@@ -1,0 +1,155 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AuctionProject</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AuctionProject.styles.css" asp-append-version="true" />
+    <style>
+        .navbar-nav .nav-item {
+            transition: transform 0.3s ease; /* Add a transition effect for the transform property */
+        }
+
+            .navbar-nav .nav-item:hover {
+                transform: scale(1.1); /* Change this value to adjust the zoom level */
+            }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 ">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">AuctionProject</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="DonatePage">Donate</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="WithdrawPage">Withdraw</a>
+                            </li>
+                            var user = await UserManager.GetUserAsync(User);
+                            if (user != null)
+                            {
+                                var isInAdminRole = await UserManager.IsInRoleAsync(user, "Admin");
+                                var isInGMRole = await UserManager.IsInRoleAsync(user, "GM");
+                                var isInMemberRole = await UserManager.IsInRoleAsync(user, "Member");
+                                if (isInAdminRole)
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Create">Create</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Censorship">Censorship</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="IndexUser">My Product</a>
+                                    </li>
+                                }
+                                else if (isInGMRole)
+                                {
+                                    <li class="nav-item">
+                                        <span class="nav-link text-dark">Welcome GM!</span>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="nav-item">
+                                        <span class="nav-link text-dark">Welcome Member!</span>
+                                    </li>
+                                }
+                            }
+                        }
+                       @*  <li class="nav-item">
+                            <a class="nav-link text-dark" id="time"></a>
+                        </li> *@
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+@*    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>*@
+    @RenderBody()
+
+@*     <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2023 - AuctionProject - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer> *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+  @*  java script cua dong ho*@
+    @* <script>
+        function Dong_ho() {
+            var date = new Date();
+
+            // Lấy số thứ tự của ngày hiện tại
+            var current_day = date.getDay();
+
+            // Biến lưu tên của thứ
+            var day_name = '';
+
+            // Lấy tên thứ của ngày hiện tại
+            switch (current_day) {
+                case 0:
+                    day_name = "Chủ nhật";
+                    break;
+                case 1:
+                    day_name = "Thứ hai";
+                    break;
+                case 2:
+                    day_name = "Thứ ba";
+                    break;
+                case 3:
+                    day_name = "Thứ tư";
+                    break;
+                case 4:
+                    day_name = "Thứ năm";
+                    break;
+                case 5:
+                    day_name = "Thứ sau";
+                    break;
+                case 6:
+                    day_name = "Thứ bảy";
+            }
+            function addZero(i) {
+                if (i < 10) { i = "0" + i }
+                return i;
+            }
+            var today = new Date();
+            var date = today.getDate() + '-' + (today.getMonth() + 1) + '-' + today.getFullYear();
+            var time = "," + day_name + " - " + addZero(today.getHours()) + ":" + addZero(today.getMinutes()) + ":" + addZero(today.getSeconds());
+            var dateTime = date + ' ' + time;
+            document.getElementById("time").innerHTML = dateTime;
+
+        }
+        var Dem_gio = setInterval(Dong_ho, 1000);
+    </script> *@
+</body>
+</html>

@@ -1,0 +1,228 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+<style>
+    /* Custom style to move the number closer to the photo */
+    .closer-to-photo {
+        margin-left: -5px; /* Adjust the value as needed */
+    }
+
+    #notification-dropdown {
+        position: absolute;
+        top: 50px; /* Adjust the top position as needed */
+        right: 0;
+        left: auto;
+        z-index: 1000;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #notification-list {
+        padding: 10px;
+    }
+
+    .list-group-item {
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        .list-group-item:hover {
+            background-color: #f5f5f5;
+        }
+
+    #notification-dropdown {
+        z-index: 1000; /* Adjust the value as needed, make sure it's higher than other elements */
+    }
+
+</style>
+<ul class="navbar-nav">
+
+@if (SignInManager.IsSignedIn(User))
+{
+     var currentUser = await UserManager.GetUserAsync(User);
+
+    <li class="nav-item">
+        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
+    </li> 
+    @if(currentUser != null)
+    {
+       
+        // test noti
+            <li class="nav-item position-relative" style="z-index: 100;">
+                <button class="nav-link btn btn-link text-dark" id="notification-button">
+                    <img src="/Upload//notification_24px.png" alt="Notifications" />
+                    <span id="notification-badge-container">
+                        <span class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 10px; left: 80%;">
+                            <span class="visually-hidden">unread messages</span>
+                            <span class="badge-number" id="notification-count">@currentUser.NotificationCount</span>
+                        </span>
+                    </span>
+                </button>
+                <div class="dropdown-menu" id="notification-dropdown" style="display: none; max-height: 400px; overflow-y: auto; overflow-x: hidden; width: 400px;">
+                    <ul class="list-group" id="notification-list"></ul>
+                </div>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" id="money-balance">Money: @currentUser.Money</a>
+            </li>
+    }
+    <li class="nav-item">
+        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+    </li>
+}
+</ul>
+<script>
+    function updateMoneyBalance() {
+        $.ajax({
+            url: '@Url.Action("GetMoneyBalance", "Home")',
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                // Format the money balance using the formatPrice function
+                let formattedBalance = formatMoney(data);
+
+                // Update the displayed money balance on the page
+                $("#money-balance").text("Money: " + formattedBalance);
+            },
+            error: function (error) {
+                console.error("Error fetching money balance:", error);
+            }
+        });
+    }
+
+    function formatMoney(input) {
+        // Convert the input to a number if it's not already
+        let numericValue = typeof input === 'number' ? input : parseFloat(input);
+
+        // Check if the numeric value is valid
+        if (!isNaN(numericValue)) {
+            // Format the numeric value without decimal places
+            let formattedValue = numericValue.toFixed(0).replace(/\d(?=(\d{3})+$)/g, '$&,');
+
+            return formattedValue;
+        } else {
+            console.error("Invalid input for formatting price:", input);
+            return input; // Return the input as is if it's not a valid number
+        }
+    }
+    // Call the updateMoneyBalance function every 5 seconds (adjust the interval as needed)
+    setInterval(updateMoneyBalance, 1000); // Update every 5 seconds
+
+</script>
+<!-- notification -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+        $(document).ready(function () {
+            // Function to update notification count
+            function updateNotificationCount() {
+                // Perform an asynchronous request to get the latest NotificationCount
+                $.ajax({
+                    type: 'GET', // Assuming you have a GET endpoint to retrieve the count
+                    url: '/Home/GetNotificationCount', // Adjust the URL to your actual endpoint
+                    success: function (data) {
+                        // Update the UI with the latest count
+                        if (data > 0) {
+                            $('#notification-badge-container').show();
+                        } else {
+                            $('#notification-badge-container').hide();
+                        }
+                      $('#notification-count').text(data);
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.error('Error getting notification count:', textStatus, errorThrown);
+                    }
+                });
+            }
+
+        // Function to update notification list
+        function updateNotificationList() {
+            // Perform an asynchronous request to get the latest notifications
+            $.ajax({
+                type: 'GET', // Assuming you have a GET endpoint to retrieve notifications
+                url: '/Home/GetNotifications', // Adjust the URL to your actual endpoint
+                success: function (notifications) {
+                    // Clear existing notifications in the list
+                    $('#notification-list').empty();
+                    notifications.forEach(function (notification) {
+                        var formattedTimestamp = new Date(notification.timestamp).toLocaleString(); // Format the timestamp as needed
+                        if (notification.Isread == true) {
+                            $('#notification-list').append('<li class="list-group-item">' + notification.message + '<br>' + formattedTimestamp + '</li>');
+      
+                        }
+                        else {
+                            $('#notification-list').append('<li class="list-group-item">' +
+                                notification.message + '<br>' +
+                                '<span style="color: blue;">' + formattedTimestamp + '</span>' +
+                                '</li>');
+                        }
+
+                    });
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    console.error('Error getting notifications:', textStatus, errorThrown);
+                }
+            });
+        }
+
+            // Initial call to update notification count
+            updateNotificationCount();
+            updateNotificationList();
+
+            // Set interval to update notification count every second
+            setInterval(function () {
+            updateNotificationCount();
+            
+            }, 1000);
+
+            // Click event handler for the notification button
+            $('#notification-button').on('click', function () {
+                // Perform an asynchronous request to update NotificationCount
+                $.ajax({
+                    type: 'POST',
+                    url: '/Home/UpdateNotificationCount', // Adjust the URL to your actual endpoint
+                    success: function () {
+                        // Update the UI
+                    updateNotificationList();
+                        $('#notification-count').text('0');
+                        $('#notification-badge-container').hide();
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.error('Error updating notification count:', textStatus, errorThrown);
+                    }
+                });
+            });
+        });
+</script>
+
+<!-- drop down -->
+<script>
+    $(document).ready(function () {
+        $("#notification-button").click(function () {
+            $("#notification-dropdown").toggle();
+        });
+
+        // Close dropdown when clicking outside of it
+        $(document).on("click", function (event) {
+            if (!$(event.target).closest("#notification-button, #notification-dropdown").length) {
+                $("#notification-dropdown").hide();
+            }
+        });
+    });
+</script>
+<!-- display message -->
+

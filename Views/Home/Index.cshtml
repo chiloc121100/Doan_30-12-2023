@@ -1,0 +1,589 @@
+﻿@model IEnumerable<AuctionProject.Models.Product>
+
+@{
+
+    ViewData["Title"] = "Privacy Policy";
+}
+@*<h1>@ViewData["Title"]</h1>*@
+
+<style>
+    .popup-background {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 20px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+    }
+
+    .product-card {
+        border: 1px solid #ccc;
+        margin: 10px;
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column; /* Align card content vertically */
+    }
+
+        /* Style for the product images */
+        .product-card img {
+            width: 100%;
+            min-width: 200px;
+            min-height: 200px;
+            max-height: 200px; /* Adjusted max-height value for images */
+            object-fit: cover; /* Maintain aspect ratio and cover entire area */
+        }
+
+    .card-body {
+        padding: 5px; /* Add padding to create space around card content */
+    }
+
+    .card-text {
+        margin-top: 5px; /* Add margin between paragraphs for spacing */
+    }
+
+    .text-overlay {
+        position: absolute;
+        top: 29%;
+        left: 17%;
+        width: 65%;
+        height: 13%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 0, 0, 0.5);
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        opacity: 1; /* Initially hidden */
+        transition: opacity 0.3s ease;
+        border: 1px solid red; /* Add a white border around the text */
+        border-radius: 10px;
+        box-sizing: border-box; /* Include the border in the element's dimensions */
+    }
+
+    .midtextbutton{
+        width: 50%;
+    }
+    .borderMenu
+    {
+        border-style: solid;
+        border-color: red;
+    }
+    .borderTable
+    {
+        border: 2px solid #7f7f7f;
+        border-radius: 25px;
+    }
+
+    .fixMap {
+        position: absolute; /* Initially positioned relative to its containing block */
+        /* transition: top 0.3s; /* Add smooth transition effect */ 
+        width: 250px;
+        height: 500px;
+    }
+        .fixMap.fixed {
+            position: fixed; /* Fixed positioning when scrolling at 900px or higher */
+            top: 10%;
+            width: 250px;
+            height: 500px;
+        }
+    .fixMap1{
+        margin: 5px;
+        padding: 5px;
+    }
+
+    .fixMap2 {
+        margin: 10px;
+    }
+    .fixMap3 {
+        padding: 10px;
+    }
+
+  .hidden-element {
+    display: none;
+  }
+   
+  @@media screen and (min-width: 1700px) {
+    .hidden-element {
+            display: block; /* hide min-width: 1700px */
+        }
+  }
+
+    .colorBg {
+        background-image: url();
+    }
+    /* banner */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .banner {
+        background-color: #1a2026; /* Dark background color */
+        color: #ffffff; /* Light text color */
+        padding: 100px; /* Increase padding for more space */
+        text-align: left; /* Align text to the left for a modern look */
+        border-radius: 15px; /* Add rounded corners for a softer appearance */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); /* Add a subtle box shadow for depth */
+                animation: fadeIn 1.5s ease-in-out; /* Adjust the duration and easing as needed */
+    }
+
+    .B41712 {
+        color: #e9ecef; /* Accent color */
+    }
+
+    .banner img {
+        max-width: 100%; /* Ensure the image doesn't exceed its container */
+        height: auto;
+        margin-top: 30px; /* Slightly increase space between text and image */
+        border-radius: 15px; /* Add a subtle border radius to the image */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhance box shadow for depth */
+    }
+
+    .notice-text {
+        font-size: 18px;
+        line-height: 1.8; /* Increase line height for better readability */
+        margin-bottom: 30px; /* Slightly increase bottom margin */
+    }
+
+    .text-middle {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+    .fade-in {
+        animation: fadeIn 1.5s ease-in-out; /* Adjust the duration and easing as needed */
+    }
+
+    /* button edit */
+    .dark-background { /* Dark background color */
+        color: white; /* Text color */
+    }
+
+    .product-card {
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .product-card:hover {
+            transform: scale(1.05); /* Hover effect: Scale the card */
+        }
+
+    .edit-button-container {
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    .edit-button {
+        transition: background-color 0.3s ease-in-out;
+    }
+
+        .edit-button:hover {
+            background-color: #2c3e50; /* Hover effect: Darker background color */
+        }
+
+        /* footer */
+    .bg-dark {
+        background-color: #343a40; /* Dark background color */
+    }
+
+    .text-white {
+        color: #ffffff; /* White text color */
+    }
+
+    .footer-section {
+        margin-bottom: 30px; /* Adjust margin as needed */
+    }
+
+    .footer-section-title {
+        color: #FFD700; /* Accent color */
+        font-size: 1.5rem; /* Adjust font size as needed */
+        margin-bottom: 1rem; /* Adjust margin as needed */
+    }
+
+    .footer-content {
+        color: #ffffff;
+        font-size: 16px;
+    }
+
+    .footer-link {
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+        .footer-link:hover {
+            color: #FFD700; /* Hover color */
+        }
+
+    .footer-text {
+        margin-bottom: 10px;
+    }
+
+    /* Additional Styling for Improved Appearance */
+    .py-5 {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+</style>
+<!-- dispaly if have any erro -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="popupBackground" class="popup-background">
+        <div id="popup" class="popup">
+            <p>@TempData["ErrorMessage"]</p>
+            <button id="closeButton" class="popup-button d-inline-flex">Close</button>
+            <a href="~/Identity/Account/Login" id="closeButton" class="popup-button d-inline-flex">Login</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var popupBackground = document.getElementById("popupBackground");
+            var popup = document.getElementById("popup");
+            var closeButton = document.getElementById("closeButton");
+
+            popupBackground.style.display = "block";
+            popup.style.display = "block";
+
+            closeButton.addEventListener("click", function () {
+                popupBackground.style.display = "none";
+                popup.style.display = "none";
+            });
+        });
+    </script>
+}
+<!-- main -->
+<body>
+    <div class="banner">
+        <div class="row">
+            <div class="col-md-6 text-left">
+                <div class="text-middle">
+                    <h1 style=" color: #FFD700;">Welcome to DCL Auction</h1>
+                    <p class="B41712">Your Premier Online Auction Experience</p>
+                    <p class="notice-text">
+                        Sell items with uncertain prices through our online auctions.
+                        Discover the true market value through competitive bidding.
+                        List your items, engage buyers, and let the auction set the price for you.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 text-right">
+                <img src="/Upload/BannerAuction.png" alt="Banner Image" />
+            </div>
+        </div>
+    </div>
+
+
+        <h2 class="text-center mb-6 p-4"> List of auction products </h2>
+
+
+    <div class="container-fluid colorBg">
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-1">
+                <div id="fixMapDiv" class="fixMap bg-light borderTable hidden-element">
+                    <div class="fixMap1">
+                        <h1> Search </h1>
+                        <input type="text" id="searchInput" placeholder="Search text...">
+                        <div class="fixMap2">
+                            <h5><label><input type="radio" name="statusFilter" id="SALL"> ALL </label></h5>
+                            <h5><label><input type="radio" name="statusFilter" id="SUpcoming"> Upcoming </label></h5>
+                            <h5><label><input type="radio" name="statusFilter" id="SOngoing"> Ongoing </label></h5>
+                            <h5><label><input type="radio" name="statusFilter" id="SFinished"> Finished</label></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-1"></div>
+            <!-- display product here -->
+            <div class="row col-sm-8 rounded bg-light borderTable">
+                <div class="row col-sm-12" id="productList"></div>
+                <div id="seeMoreButton" class="text-center mt-3">
+                    <button class="btn btn-primary" onclick="loadMoreProducts()">See More</button>
+                </div>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+
+    <!-- new -->
+    <div class="fixMap3"></div>
+        <div class="row">
+            <div class="col-sm-3"></div>
+            <div class="row col-sm-8 rounded bg-light borderTable fixMap3">
+                das
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <div class="bg-dark text-white py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <!-- Facebook and Google links -->
+                    <div class="footer-section">
+                        <div class="footer-section-title">Social Media</div>
+                        <div class="footer-content">
+                            <div><a href="#" class="footer-link">Facebook</a></div>
+                            <div><a href="#" class="footer-link">Google</a></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Other content -->
+                    <div class="footer-section">
+                        <div class="footer-section-title">Other Content</div>
+                        <div class="footer-content">
+                            <div class="footer-text">Test.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Contact us -->
+                    <div class="footer-section">
+                        <div class="footer-section-title">Contact Us</div>
+                        <div class="footer-content">
+                            <div class="footer-text">Email: duongchilocmail@gmail.com</div>
+                            <div class="footer-text">Phone: +84932978748</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var productsToShow = 6;
+        var productsIncrement = 6;
+        function formatProductDate(dateEnd, currentDate) {
+            if (dateEnd >= currentDate) {
+                // Display countdown if dateEnd is today or in the future
+                var timeDiff = dateEnd - currentDate;
+                var seconds = Math.floor(timeDiff / 1000) % 60;
+                var minutes = Math.floor(timeDiff / 1000 / 60) % 60;
+                var hours = Math.floor(timeDiff / 1000 / 60 / 60) % 24;
+                var days = Math.floor(timeDiff / 1000 / 60 / 60 / 24);
+                return days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+            } else {
+                // Display the date in a specific format if dateEnd is in the past
+                var options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
+                return dateEnd.toLocaleDateString('en-US', options);
+            }
+        }
+        function loadProducts() {
+            var rdAll = $('#SALL').prop('checked');
+            var rdUpcoming = $('#SUpcoming').prop('checked');
+            var rdOngoing = $('#SOngoing').prop('checked');
+            var rdFinished = $('#SFinished').prop('checked');
+            var searchInput = $('#searchInput').val().toLowerCase(); // text to search
+
+            //page number
+            var productCount = 0;
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetProducts", "Home")',
+                success: function (data) {
+                    var productList = $('#productList'); // lay id tren html
+                    productList.empty();
+                    // console.log('url: @Url.Action("GetProducts", "Home")');
+                    $.each(data, function (index, product) {
+                        var dateEnd = new Date(product.dateEnd);
+                        var dateStart = new Date(product.dateStart);
+                        var currentDate = new Date();
+                        //console.log(data);
+                        //use function above
+                        var formattedDate = formatProductDate(dateEnd, currentDate);
+
+                        var searchTitle = product.title.toLowerCase();
+                        console.log(product.title.toLowerCase());
+                        var productCard = '<div class="col-sm-4">' +
+                            '<div class="card product-card">' +
+                            '<a href="Products/Details/' + product.id + '"> ' +
+                            '<div class="image-container">' +
+                            '<img src="/Upload/' + product.image + '" class="card-img-top" alt="Product Image">' +
+                            '<div class="text-overlay text-center">' + formattedDate + '</div>' +
+                            '</div>' +
+                            '</a>' +
+                            '<div class="card-body">' +
+                            '<p class="card-text"><strong>' + product.title + '</strong></p>' +
+                            '<p class="card-text">Start Price: ' + product.priceStart + '</p>' +
+                            '<p class="card-text"><strong>Owner:</strong><br><a href="UsersPages/Index/' + product.user.email + '">' + product.user.email + '</a></p>' +
+                            '<p class="card-text"><strong>Offered:</strong><br><a href="UsersPages/Index/' + product.userGet.email + '">' + product.userGet.email + '</a></p>' +
+                            '<div style="" >' +
+                            '<div style="" class="edit-button-container">' +
+                            '<form class="edit-form" action="/Home/Offer" method="post" onsubmit="return showConfirmation()">' +
+                            '<input type="hidden" name="productId" value="' + product.id + '" />' +
+                            '<input type="hidden" name="priceFinish" value="' + product.priceFinish + '" />' +
+                            '<div class="text-center">' +
+                            '<button type="submit" class="btn btn-primary midtextbutton edit-button">Offer</button>' +
+                            '</div>' +
+                            '</form>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+
+                        // Search feature
+                        if (searchInput && searchTitle.includes(searchInput))
+                        {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+
+                        else if (!rdAll && !rdUpcoming && !rdOngoing && !rdFinished && !searchInput) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        else if (rdAll && !rdUpcoming && !rdOngoing && !rdFinished && !searchInput) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        else if (!rdAll && rdUpcoming && !rdOngoing && !rdFinished && !searchInput && dateStart > currentDate) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        else if (!rdAll && !rdUpcoming && rdOngoing && !rdFinished && !searchInput && dateStart < currentDate && dateEnd > currentDate) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        else if (!rdAll && !rdUpcoming && rdOngoing && !rdFinished && !searchInput && dateStart < currentDate && dateEnd > currentDate) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        else if (!rdAll && !rdUpcoming && !rdOngoing && rdFinished && !searchInput && dateEnd < currentDate) {
+                            if (productCount < productsToShow) {
+                                productList.append(productCard);
+                                productCount++;
+                            }
+                        }
+                        
+
+                        //display see more or no
+                        var remainingProducts = data.length - productsToShow;
+
+                        if (remainingProducts > 0) {
+                            $('#seeMoreButton').show();
+                        } else {
+                            $('#seeMoreButton').hide();
+                        }
+
+                    });
+                }   
+            });
+        }
+        // Assuming you have a reference to the fixMap container
+
+        // add eff //
+        
+
+        // Add slideUp and slideDown animation
+        //var fixMapContainer = $('.fixMap');
+        //fixMapContainer.hide().slideDown(1000)
+
+
+
+        // ... the rest of your JavaScript code ...
+
+        // page number
+        function loadMoreProducts() {
+            productsToShow += productsIncrement;
+            loadProducts();
+        }
+
+        // Function to show confirmation dialog before form submission
+        $(document).on('submit', '.edit-form', function () {
+            var confirmation = confirm('Are you sure you want to proceed?');
+            if (!confirmation) {
+                return false; // Prevent form submission
+            }
+        });
+        // Run the loadProducts function on page load ----- as soon as posisble ------
+        $(document).ready(function () {
+            loadProducts();
+        });
+
+        //holder card
+        document.addEventListener('mouseover', function (event) {
+            // Check if the mouseover event is on the "Edit" button
+            if (event.target.classList.contains('edit-button')) {
+                event.target.closest('.edit-button-container').classList.add('dark-background');
+            }
+        });
+
+        // Add event listener for mouseout
+        document.addEventListener('mouseout', function (event) {
+            // Check if the mouseout event is on the "Edit" button
+            if (event.target.classList.contains('edit-button')) {
+                event.target.closest('.edit-button-container').classList.remove('dark-background');
+            }
+        });
+        // Load products periodically ------- 10s reload page -------
+        var Loadproduct = setInterval(loadProducts, 1000);
+    </script>
+}
+<div class="container">
+    <!-- Your HTML content, including filter options, search input, and productList div -->
+</div>
+<script>
+    var fixMapDiv = document.getElementById('fixMapDiv');
+    var productList = document.getElementById('productList');
+    // Function to handle scroll event
+    function handleScroll() {
+        // Check if the scroll position is 900px or higher
+        if (window.scrollY >= 900) {         
+            fixMapDiv.classList.add('fixed'); // Add the 'fixed' class
+        } else {
+            fixMapDiv.classList.remove('fixed'); // Remove the 'fixed' class
+            //productList.classList.remove('fade-in');
+        }
+        if (window.scrollY >= 500)
+        {
+            productList.classList.add('fade-in');
+        }
+        
+    }
+
+    // Add event listener for scroll event
+    window.addEventListener('scroll', handleScroll);
+</script>

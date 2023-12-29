@@ -1,0 +1,218 @@
+﻿@model IEnumerable<AuctionProject.Models.Product>
+
+@{
+    ViewData["Title"] = "List Event";
+    var upComingEvents = ViewBag.UpComingEvents as IQueryable<Product>;
+    var pastEvents = ViewBag.PastEvents as IQueryable<Product>;
+}
+<div class="container">
+    <main role="main" class="pb-3">
+<h1>@ViewData["Title"]</h1>
+
+<h2>Upcoming Events</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th style="max-width: 100px; overflow: hidden; text-overflow: ellipsis;">Title</th>
+                <th>Description</th>
+                <th>Date Start</th>
+                <th>Date End</th>
+                <th>Image</th>
+                <th>Start Price</th>
+                <th>End Price</th>
+                <th>Finish Price</th>
+                <th>Price Jump</th>
+                <th>User</th>
+                <th>User Get</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="EventNow">
+            <!-- Products will be populated here -->
+        </tbody>
+    </table>
+
+
+<h2>Past Events</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th style="max-width: 100px; overflow: hidden; text-overflow: ellipsis;">Title</th>
+            <th>Description</th>
+            <th>Date Start</th>
+            <th>Date End</th>
+            <th>Image</th>
+            <th>Start Price</th>
+            <th>End Price</th>
+            <th>Finish Price</th>
+            <th>Price Jump</th>
+            <th>User</th>
+            <th>User Get</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="EventPass">
+        <!-- Products will be populated here -->
+    </tbody>
+</table>
+
+</main>
+</div>
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+
+        function loadProducts() {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("NowEvent", "Home")',
+                success: function (data) {
+                    var productList = $('#EventNow');
+                    productList.empty();
+
+                    $.each(data, function (index, product) {
+                        productList.append('<tr>' +
+                            '<td>' + product.id + '</td>' +
+                            '<td style="max-width: 100px; overflow: hidden; text-overflow: ellipsis;">' + product.title + '</td>' +
+                            '<td>' + product.description + '</td>' +
+                            '<td>' + product.dateStart + '</td>' +
+                            '<td>' + product.dateEnd + '</td>' +
+                            '<td><img src="/Upload/' + product.image + '" alt="Product Image" width="100" height="100px"/></td>' +
+                            '<td>' + product.priceStart + '</td>' +
+                            '<td>' + product.priceEnd + '</td>' +
+                            '<td>' + product.priceFinish + '</td>' +
+                            '<td>' + product.priceJump + '</td>' +
+                            '<td>' + product.user.email + '</td>' +
+                            '<td>' + product.userGet.email + '</td>' +
+                            '<td>' +
+                            '<form class="edit-form" action="/Home/Offer" method="post" onsubmit="return showConfirmation()">' +
+                            '<input type="hidden" name="productId" value="' + product.id + '" />' +
+                            '<input type="hidden" name="priceFinish" value="' + product.priceFinish + '" />' +
+                            '<button type="submit" class="btn btn-primary">Offer</button>' +
+                            '</form>' +
+                            '</td>' +
+                            '</tr>');
+                    });
+                }
+            });
+        }
+
+        function loadProducts1() {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("PastEvent", "Home")',
+                success: function (data) {
+                    var productList = $('#EventPass');
+                    productList.empty();
+
+                    $.each(data, function (index, product) {
+                        productList.append('<tr>' +
+                            '<td>' + product.id + '</td>' +
+                            '<td style="max-width: 100px; overflow: hidden; text-overflow: ellipsis;">' + product.title + '</td>' +
+                            '<td>' + product.description + '</td>' +
+                            '<td>' + product.dateStart + '</td>' +
+                            '<td>' + product.dateEnd + '</td>' +
+                            '<td><img src="/Upload/' + product.image + '" alt="Product Image" width="100px" height="100px"/></td>' +
+                            '<td>' + product.priceStart + '</td>' +
+                            '<td>' + product.priceEnd + '</td>' +
+                            '<td>' + product.priceFinish + '</td>' +
+                            '<td>' + product.priceJump + '</td>' +
+                            '<td>' + product.user.email + '</td>' +
+                            '<td>' + product.userGet.email + '</td>' +
+                            '<td>' +
+                            '<form class="edit-form" action="/Home/Offer" method="post" onsubmit="return showConfirmation()">' +
+                            '<input type="hidden" name="productId" value="' + product.id + '" />' +
+                            '<input type="hidden" name="priceFinish" value="' + product.priceFinish + '" />' +
+                            '<button type="submit" class="btn btn-primary">Offer</button>' +
+                            '</form>' +
+                            '</td>' +
+                            '</tr>');
+                    });
+                }
+            });
+        }
+
+
+        $(document).on('submit', '.edit-form', function () {
+            var confirmation = confirm('Are you sure you want to proceed?');
+            if (!confirmation) {
+                return false; // Prevent form submission
+            }
+        });
+
+        var Loadproduct = setInterval(loadProducts, 1000);
+        var Loadproduct1 = setInterval(loadProducts1, 1000);
+        ;
+    </script>
+}
+
+@*<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Date Start</th>
+            <th>Date End</th>
+            <th>Image</th>
+            <th>Start Price</th>
+            <th>End Price</th>
+            <th>Finish Price</th>
+            <th>Price Jump</th>
+            <th>User</th>
+            <th>User Get</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="productList">
+        <!-- Products will be populated here -->
+    </tbody>
+</table>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+
+
+        function loadProducts() {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetProducts", "Home")',
+                success: function (data) {
+                    var productList = $('#productList');
+                    productList.empty();
+
+                    $.each(data, function (index, product) {
+                        productList.append('<tr>' +
+                            '<td>' + product.id + '</td>' +
+                            '<td>' + product.title + '</td>' +
+                            '<td>' + product.description + '</td>' +
+                            '<td>' + product.dateStart + '</td>' +
+                            '<td>' + product.dateEnd + '</td>' +
+                            '<td><img src="/Upload/' + product.image + '" alt="Product Image" width="100" /></td>' +
+                            '<td>' + product.priceStart + '</td>' +
+                            '<td>' + product.priceEnd + '</td>' +
+                            '<td>' + product.priceFinish + '</td>' +
+                            '<td>' + product.priceJump + '</td>' +
+                            '<td>' + product.user.email + '</td>' +
+                            '<td>' + product.userGet.email + '</td>' +
+                            '<td>' +
+                            '<form action="/Home/Offer" method="post">' +
+                            '<input type="hidden" name="productId" value="' + product.id + '" />' +
+                            '<button type="submit" class="btn btn-primary">Edit</button>' +
+                            '</form>' +
+                            '</td>' +
+                            '</tr>');
+                    });
+                }
+            });
+        }
+        var Loadproduct = setInterval(loadProducts, 1000);
+;
+    </script>
+}*@

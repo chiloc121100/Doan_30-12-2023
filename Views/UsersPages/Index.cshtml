@@ -1,0 +1,167 @@
+﻿@model IEnumerable<AuctionProject.Models.ProductFollow>
+
+@{
+    ViewData["Title"] = "Index";
+    var usersPage = ViewData["UsersPage"] as AuctionProject.Models.ApplicationUser;
+    var usersFollow = ViewData["UsersFollow"] as List<AuctionProject.Models.Product>;
+    var listProductFollow = ViewData["ListProductFollow"] as List<AuctionProject.Models.ProductFollow>;
+}
+
+@*<div class="user-details">
+    @if (usersPage != null)
+    {
+        <p>User ID: @usersPage.Id</p>
+    }
+</div>*@
+
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Personal Page</title>
+        <!-- Link to Bootstrap CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            /* Add custom CSS styles here */
+            .profile-image {
+                width: 150px;
+                height: 150px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+        </style>
+    </head>
+
+
+
+
+
+
+    @if (usersPage != null)
+    {
+    <div class="container">
+        @* <p>User ID: @usersPage.Id</p> *@
+
+        
+
+
+            <!-- About Section -->
+            <section id="about" class="py-5">
+                <div class="container text-center">
+                    <img src="/Upload/Hello_20230815015138.png" class="profile-image mb-3">
+                    <h2>@usersPage.Email</h2>
+                    <p>@usersPage.PhoneNumber</p>
+                </div>
+            </section>
+ 
+            <!-- Portfolio Section -->
+            <section id="portfolio" class="py-3 bg-light">
+            <div class="d-flex justify-content-center mb-3">
+                <button class="btn btn-primary mx-2" id="btnViewFollowedProducts">
+                    <i class="fas fa-eye"></i> View Followed Products
+                </button>
+
+                <button class="btn btn-primary mx-2" id="btnViewMyProducts">
+                    <i class="fas fa-box"></i> View My Products
+                </button>
+
+                <button class="btn btn-primary mx-2" id="btnViewBidding">
+                    <i class="fas fa-gavel"></i> View Bidding
+                </button>
+            </div>
+
+
+                @if (usersFollow != null && usersFollow.Any())
+                {
+                    <div class="container">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Title</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var productFollow in usersFollow)
+                            {
+                                // Check if there is a corresponding ProductFollow with IsFollow == true
+                                var matchingProductFollow = listProductFollow.FirstOrDefault(pf => pf.ProductId == productFollow.Id & pf.IsFollow == true);
+                                if (matchingProductFollow != null)
+                                {
+                                    <tr>
+                                        <td class="align-middle">
+                                            <a href="../../Products/Details/@productFollow.Id">
+                                                <div class="d-flex align-items-center justify-content-center" style="height: 150px;">
+                                                    <img src="/Upload/@productFollow.Image" class="detailImage" style="max-width: 100%; max-height: 100%;" />
+                                                </div>
+                                            </a>
+                                        </td>
+                                        <td>@productFollow.Title</td>
+                                        <td> <button class="unfollow-btn" data-product-id="@productFollow.Id">Unfollow</button></td>
+                                    </tr>
+                                }
+                            }
+
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p>No users followed.</p>
+                }
+            </section>
+
+            <!-- Contact Section -->
+            <section id="contact" class="py-5">
+                <div class="container text-center">
+                    <h2>Contact Me</h2>
+                    <p>Contact information and a contact form can go here.</p>
+                </div>
+            </section>
+            </div>
+            <!-- Link to Bootstrap JS and jQuery -->
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+            <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        
+    }
+@section scripts {
+    <script>
+        $(".unfollow-btn").click(function () {
+            var button = $(this);
+            var productId = button.data("product-id");
+
+            // Send an AJAX request to the Unfollow action
+            $.ajax({
+                url: "/ProductFollows/Unfollow",
+                data: { productId: productId },  // Pass productId as an object
+                type: "POST",
+                success: function (result) {
+                    button.text(result ? "Unfollow" : "Follow");
+                },
+                error: function () {
+                    // Handle errors if needed
+                }
+            });
+        });
+    </script>
+    <script>
+        // Add event handlers for the buttons
+        $("#btnViewFollowedProducts").click(function () {
+            // Add logic to view followed products
+            // You can redirect to a different URL or load the products dynamically using AJAX
+        });
+
+        $("#btnViewMyProducts").click(function () {
+            // Add logic to view user's products
+            // You can redirect to a different URL or load the products dynamically using AJAX
+        });
+
+        $("#btnViewBidding").click(function () {
+            // Add logic to view bidding products
+            // You can redirect to a different URL or load the products dynamically using AJAX
+        });
+    </script>
+}

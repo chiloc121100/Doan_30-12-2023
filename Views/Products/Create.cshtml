@@ -1,0 +1,287 @@
+﻿@model AuctionProject.Models.Product
+
+@{
+    ViewData["Title"] = "Create";
+}
+<div class="container">
+    <h1>Create</h1>
+
+    <h4>Product</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post" asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Title" class="control-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                    <div id="titleValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                    <div id="descriptionValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DateStart" class="control-label"></label>
+                    <input asp-for="DateStart" class="form-control" />
+                    <span asp-validation-for="DateStart" class="text-danger"></span>
+                    <div id="dateStartValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DateEnd" class="control-label"></label>
+                    <input asp-for="DateEnd" class="form-control" />
+                    <span asp-validation-for="DateEnd" class="text-danger"></span>
+                    <div id="dateEndValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Image" class="control-label"></label>
+                    <input type="file" name="files" asp-for="Image" class="form-control" />
+                    <span asp-validation-for="Image" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PriceStart" class="control-label"></label>
+                    <input asp-for="PriceStart" class="form-control" />
+                    <span asp-validation-for="PriceStart" class="text-danger"></span>
+                    <div id="priceStartValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PriceEnd" class="control-label"></label>
+                    <input asp-for="PriceEnd" class="form-control" />
+                    <span asp-validation-for="PriceEnd" class="text-danger"></span>
+                    <div id="priceEndValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PriceJump" class="control-label"></label>
+                    <input asp-for="PriceJump" class="form-control" />
+                    <span asp-validation-for="PriceJump" class="text-danger"></span>
+                    <div id="priceJumpValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PriceFinish" class="control-label"></label>
+                    <input asp-for="PriceFinish" class="form-control" />
+                    <span asp-validation-for="PriceFinish" class="text-danger"></span>
+                    <div id="priceFinishValidationMsg" class="text-danger"></div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+                <div class="text-danger" id="formValidationMsg"></div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+            $("#Title").change(function () {
+                validateTitle();
+            });
+
+            $("#DateStart").change(function () {
+                validateStartDate();
+            });
+
+            $("#DateEnd").change(function () {
+                validateEndDate();
+            });
+
+            $("#PriceStart").change(function () {
+                validatePriceStart();
+            });
+
+            $("#PriceEnd").change(function () {
+                validatePriceEnd();
+            });
+
+            $("#PriceJump").change(function () {
+                validatePriceJump();
+            });
+
+            $("#PriceFinish").change(function () {
+                validatePriceFinish();
+            });
+
+            $("form").submit(function (e) {
+                // Validate before form submission
+                if (!validateForm()) {
+                    e.preventDefault(); // Prevent form submission
+                }
+            });
+
+        });
+
+        function validateStartDate() {
+            var dateStart = new Date($("#DateStart").val());
+            var currentDate = new Date();
+
+            if (dateStart <= currentDate) {
+                $("#DateStart").addClass("input-validation-error");
+                $("#dateStartValidationMsg").text("Start date must be in the future.");
+            } else {
+                $("#DateStart").removeClass("input-validation-error");
+                $("#dateStartValidationMsg").text("");
+            }
+        }
+
+        function validateEndDate() {
+            var dateStart = new Date($("#DateStart").val());
+            var dateEnd = new Date($("#DateEnd").val());
+            var currentDate = new Date();
+
+            if (dateEnd <= dateStart || dateEnd <= currentDate) {
+                $("#DateEnd").addClass("input-validation-error");
+                $("#dateEndValidationMsg").text("End date must be greater than start date and in the future.");
+            } else {
+                $("#DateEnd").removeClass("input-validation-error");
+                $("#dateEndValidationMsg").text("");
+            }
+        }
+        function validatePriceStart() {
+            var priceStart = parseFloat($("#PriceStart").val());
+
+            if (isNaN(priceStart) || priceStart <= 0) {
+                $("#PriceStart").addClass("input-validation-error");
+                $("#priceStartValidationMsg").text("Price must be a positive number.");
+            } else {
+                $("#PriceStart").removeClass("input-validation-error");
+                $("#priceStartValidationMsg").text("");
+            }
+        }
+        function validatePriceEnd() {
+            var priceEnd = parseFloat($("#PriceEnd").val());
+
+            if (isNaN(priceEnd) || priceEnd <= 0) {
+                $("#PriceEnd").addClass("input-validation-error");
+                $("#priceEndValidationMsg").text("Price must be a positive number.");
+            } else {
+                $("#PriceEnd").removeClass("input-validation-error");
+                $("#priceEndValidationMsg").text("");
+            }
+        }
+
+        function validatePriceJump() {
+            var priceJump = parseFloat($("#PriceJump").val());
+
+            if (isNaN(priceJump) || priceJump <= 0) {
+                $("#PriceJump").addClass("input-validation-error");
+                $("#priceJumpValidationMsg").text("Price must be a positive number.");
+            } else {
+                $("#PriceJump").removeClass("input-validation-error");
+                $("#priceJumpValidationMsg").text("");
+            }
+        }
+
+        function validatePriceFinish() {
+            var priceFinish = parseFloat($("#PriceFinish").val());
+
+            if (isNaN(priceFinish) || priceFinish <= 0) {
+                $("#PriceFinish").addClass("input-validation-error");
+                $("#priceFinishValidationMsg").text("Price must be a positive number.");
+            } else {
+                $("#PriceFinish").removeClass("input-validation-error");
+                $("#priceFinishValidationMsg").text("");
+            }
+        }
+        function validateForm() {
+            // Your additional form-level validation logic
+            var dateStart = new Date($("#DateStart").val());
+            var dateEnd = new Date($("#DateEnd").val());
+            var priceStart = parseFloat($("#PriceStart").val());
+            var priceEnd = parseFloat($("#PriceEnd").val());
+            var priceJump = parseFloat($("#PriceJump").val());
+            var priceFinish = parseFloat($("#PriceFinish").val());
+            var currentDate = new Date();
+
+            if (dateStart <= currentDate) {
+                $("#DateStart").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Start date must be in the future.");
+                return false;
+            }
+            else 
+            {
+                $("#DateStart").removeClass("input-validation-error");
+            }
+            if (dateEnd <= dateStart || dateEnd <= currentDate) {
+                $("#DateEnd").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. End date must be greater than start date and in the future.");
+                return false;
+            }
+            else 
+            {
+                $("#DateStart").removeClass("input-validation-error");
+            }
+
+
+            // Validate Title
+            if ($("#Title").val().trim() === "") {
+                $("#Title").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Title cannot be empty.");
+                return false;
+            } else {
+                $("#Title").removeClass("input-validation-error");
+            }
+
+            // Validate Description
+            if ($("#Description").val().trim() === "") {
+                $("#Description").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Description cannot be empty.");
+                return false;
+            } else {
+                $("#Description").removeClass("input-validation-error");
+            }
+
+            // Validate PriceStart
+            if ($("#PriceStart").val().trim() === "" || isNaN(priceStart) || priceStart <= 0) {
+                $("#PriceStart").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Price Start cannot be empty.");
+                return false;
+            } else {
+                $("#PriceStart").removeClass("input-validation-error");
+            }
+
+            // Validate PriceEnd
+            if ($("#PriceEnd").val().trim() === "" || isNaN(priceEnd) || priceStart <= 0) {
+                $("#PriceEnd").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Price End cannot be empty.");
+                return false;
+            } else {
+                $("#PriceEnd").removeClass("input-validation-error");
+            }
+
+            // Validate PriceJump
+            if ($("#PriceJump").val().trim() === "" || isNaN(priceJump) || priceStart <= 0) {
+                $("#PriceJump").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Price Jump cannot be empty.");
+                return false;
+            } else {
+                $("#PriceJump").removeClass("input-validation-error");
+            }
+
+            // Validate PriceFinish
+            if ($("#PriceFinish").val().trim() === "" || isNaN(priceFinish) || priceStart <= 0) {
+                $("#PriceFinish").addClass("input-validation-error");
+                $("#formValidationMsg").text("Form validation failed. Price Finish cannot be empty.");
+                return false;
+            } else {
+                $("#PriceFinish").removeClass("input-validation-error");
+            }
+
+            // Add more validation logic if needed
+
+            // If all validations pass, return true
+            return true;
+        }
+
+    </script>
+}

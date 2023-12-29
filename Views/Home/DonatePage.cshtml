@@ -1,0 +1,38 @@
+﻿@model IEnumerable<AuctionProject.Models.Product>
+
+@{
+    ViewData["Title"] = "Payment Page";
+}
+
+
+<div class="container mt-5">
+    <div class="card p-4" style="z-index: 1;">
+        <h2 class="text-center mb-4">Payment Checkout</h2>
+
+        <form method="post" action="/Home/CreateCheckoutSession">
+            <div class="mb-3">
+                <label for="amount" class="form-label">Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" id="amount" name="amount" class="form-control" value="" />
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Proceed to Payment</button>
+            </div>
+        </form>
+
+        @if (ViewData["Amount"] != null)
+        {
+            <div class="alert alert-success mt-4">
+                <p class="mb-0">Payment successful! You have deposited $@ViewData["Amount"] into your account.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+}

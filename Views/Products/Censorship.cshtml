@@ -1,0 +1,153 @@
+﻿@model IEnumerable<AuctionProject.Models.Product>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<div class="container">
+<h1>Index</h1>
+
+<p>
+    <a method="get" asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+@*             <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th> *@
+            <th>
+                @Html.DisplayNameFor(model => model.IsPublic)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.isBuyNow)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateEnd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Image)
+            </th>
+@*             <th>
+                @Html.DisplayNameFor(model => model.PriceStart)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PriceEnd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PriceJump)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PriceFinish)
+            </th> *@
+            <th>User Create</th>
+            <th>User Offer</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Title)
+            </td>
+@*             <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td> *@
+            <td>
+                @Html.DisplayFor(modelItem => item.IsPublic)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.isBuyNow)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateStart)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateEnd)
+            </td>
+                <td>
+                    <img src="/Upload/@Html.DisplayFor(modelItem => item.Image)" class="detailImage" style="width: 150px; height: 150px;" />
+                    @*@Html.DisplayFor(modelItem => item.Image)*@
+                </td>
+@*             <td>
+                @Html.DisplayFor(modelItem => item.PriceStart)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PriceEnd)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PriceJump)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PriceFinish)
+            </td> *@
+                      
+                <td>
+                    @Html.DisplayFor(modelItem => item.User.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserGet.Email)
+                </td>
+           
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> 
+                @*  <form asp-action="Offer" asp-route-id="@item.Id">>
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="@item.Id" />
+                        <a asp-action="Offer">Offer</a>
+                        <div class="form-group">
+                            <input type="submit" value="Offer" class="btn btn-primary" />
+                        </div>
+                  </form> *@
+                    <a class="d-flex text-primary" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        <form class="censorship-form" method="post" asp-action="CensorshipAcceptOrCancel" asp-route-id="@item.Id">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            @if (item.IsPublic == true)
+                            {
+                                <button class="btnAcceptOrCancel" type="button" onclick="HandleAcceptOrcancel('@item.Id')">UnAccept</button>
+                            }
+                            else
+                            {
+                                <button class="btnAcceptOrCancel" type="button" onclick="HandleAcceptOrcancel('@item.Id')">Accept</button>
+                            }
+                        </form>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>
+<script>
+    function HandleAcceptOrcancel(id) {
+        var form = $(event.target).closest(".censorship-form");
+
+        $.ajax({
+            url: form.attr("action"),
+            type: "POST",
+            data: form.serialize(),
+            dataType: "json",
+            success: function (data) {
+                var button = form.find(".btnAcceptOrCancel");
+
+                if (data) {
+                    button.text("UnAccept");
+                } else {
+                    button.text("Accept");
+                }
+            },
+            error: function () {
+                displayMessage("error", "An error occurred.");
+            }
+        });
+
+        // Prevent the default form submission
+        //event.preventDefault();
+    }
+</script>
